@@ -92,12 +92,12 @@ function M.setup(opts)
   M.split_on_top = opts.split_on_top or true
   M.menu_height = opts.menu_height or 13
   M.store_hooks = opts.store_hooks or {
-    before_mksession = nil,
-    after_mksession = nil,
+    before_mksession = {},
+    after_mksession = {},
   }
   M.restore_hooks = opts.restore_hooks or {
-    before_source = nil,
-    after_source = nil,
+    before_source = {},
+    after_source = {},
   }
 end
 
@@ -147,6 +147,11 @@ function M.store_session(auto)
   end
 
   -- run pre-store-hooks
+  if M.store_hooks.before_mksession ~= nil then
+    for _, cb in ipairs(M.store_hooks.before_mksession) do
+      if type(cb) then cb() end
+    end
+  end
 
   -- deal with auto case
   if auto then -- just overwrite the default
@@ -162,6 +167,11 @@ function M.store_session(auto)
   end
 
   -- run post-store-hooks
+  if M.store_hooks.after_mksession ~= nil then
+    for _, cb in ipairs(M.store_hooks.after_mksession) do
+      if type(cb) then cb() end
+    end
+  end
 end
 
 

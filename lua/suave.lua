@@ -81,6 +81,14 @@ local function the_qflist_is_open()
   return get_the_qflist_winid()
 end
 
+local function cursor_is_not_at_the_qflist()
+  if vim.bo.buftype ~= 'quickfix'
+    or vim.fn.getqflist({ id=0 }).id ~= get_the_qflist_id() then
+    return false
+  end
+  return true
+end
+
 local function disable_local_qf_highlight()
   vim.cmd([[
     hi __SUAVE_QF_DISABLE guibg=NONE guifg=Directory
@@ -132,9 +140,30 @@ function M.toggle_menu()
   end
 end
 
+function M.store_session(auto)
+  if not suave_folder_is_there() then return end
 
-function M.restore(se_file)
+  if not auto and cursor_is_not_at_the_qflist() then
+    print("Suave: Move your cursor to the menu to store session")
+    return
+  end
 
+  -- run pre-store-hooks
+
+  -- deal with auto case
+  if auto then -- just overwrite the default
+    vim.cmd('mksession! ./.suave/default.vim')
+  else
+    local input = vim.fn.input('Enter a name for the current session: ')
+    if input == '' or input:match('^%s+$') then -- nothing added.
+      print('cancelled.')
+      return
+    end
+    -- TODO: confirm overwrite on name repeat.
+    vim.cmd('mksession! ./.suave/' .. input .. '.vim')
+  end
+
+  -- run post-store-hooks
 end
 
 

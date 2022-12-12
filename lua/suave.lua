@@ -162,6 +162,9 @@ function M.store_session(auto)
     return
   end
 
+  -- should temp.ly close the menu.
+  M.toggle_menu()
+
   -- run pre-store-hooks
   if M.store_hooks.before_mksession ~= nil then
     for _, cb in ipairs(M.store_hooks.before_mksession) do
@@ -181,7 +184,6 @@ function M.store_session(auto)
     -- TODO: confirm overwrite on name repeat.
     vim.cmd('mksession! ./' .. FOLDER_NAME .. '/' .. input .. '.vim')
   end
-  _refresh_the_qflist()
 
   -- run post-store-hooks
   if M.store_hooks.after_mksession ~= nil then
@@ -189,6 +191,9 @@ function M.store_session(auto)
       if type(cb) then cb() end
     end
   end
+
+  -- restore the menu.
+  M.toggle_menu()
 end
 
 

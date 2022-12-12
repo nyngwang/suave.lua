@@ -115,6 +115,24 @@ function M.setup(opts)
   }
 end
 
+local function _refresh_the_qflist()
+  -- prepare items by browsing .suave/.
+  local items = {}
+  for dir in io.popen([[ find .suave -name '*.vim' ]]):lines() do
+    items[#items+1] = {
+      filename = vim.fn.fnamemodify(dir, ':t'),
+      lnum = tonumber(string.sub(io.popen([[ stat -f %Sm -t %Y%m%d%H%M ]] .. dir):read(), 3, 10)), -- timestamp
+      -- TODO: should maintain a mapping file to store users' note on each session.
+      text = '',
+    }
+  end
+  -- populate those items
+  vim.fn.setqflist({}, 'r', {
+    id = get_the_qflist_id(),
+    items = items,
+  })
+end
+
 function M.toggle_menu()
   -- hint the user whether the current dir is suave root.
   if not suave_folder_is_there() then
@@ -127,22 +145,7 @@ function M.toggle_menu()
 
   print("Suave: You're ready to suave!")
 
-  -- prepare items by browsing .suave/.
-  local items = {}
-  for dir in io.popen([[ find .suave -name '*.vim' ]]):lines() do
-    items[#items+1] = {
-      filename = vim.fn.fnamemodify(dir, ':t'),
-      lnum = tonumber(string.sub(io.popen([[ stat -f %Sm -t %Y%m%d%H%M ]] .. dir):read(), 3, 10)), -- timestamp
-      -- TODO: should maintain a mapping file to store users' note on each session.
-      text = '',
-    }
-  end
-
-  -- populate those items
-  vim.fn.setqflist({}, 'r', {
-    id = get_the_qflist_id(),
-    items = items,
-  })
+  _refresh_the_qflist()
 
   -- open a qflist window at the top.
   -- TODO: setup size via config.
@@ -178,6 +181,7 @@ function M.store_session(auto)
     -- TODO: confirm overwrite on name repeat.
     vim.cmd('mksession! ./' .. FOLDER_NAME .. '/' .. input .. '.vim')
   end
+  _refresh_the_qflist()
 
   -- run post-store-hooks
   if M.store_hooks.after_mksession ~= nil then

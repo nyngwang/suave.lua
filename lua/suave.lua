@@ -99,9 +99,9 @@ function M.toggle_menu()
 
   print("Suave: You're ready to suave!")
 
-  -- collect the name of each session files(*.vim).
+  -- prepare items by browsing .suave/.
   local items = {}
-  for dir in io.popen([[ find . -name '*.vim' ]]):lines() do
+  for dir in io.popen([[ find .suave -name '*.vim' ]]):lines() do
     items[#items+1] = {
       filename = vim.fn.fnamemodify(dir, ':t'),
       -- TODO: should maintain a mapping file to store users' note on each session.

@@ -18,18 +18,6 @@ local FOLDER_NAME = '.suave'
 --   manual restore: this is done after they chose one from non-deafult
 --     maby i dont need to ehcke anything ehrer since it mujst have been done when collectign menu
 --
--- to store session:
---   one can only restore session when the cursor is hover on the menu.
---
---   should check the `.suave` has been inited.
---
---   two paths:
---   autocmd store: this is done via autocmd again.
---     we always overwrite the the deafult session
---
---   manual soter: this is doen after we have prompt something to uesrs.
---     we just call that thing to save session
---
 -- to prompt something to user:
 --
 --   to specify session name (check repeat)
@@ -100,7 +88,17 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function M.setup(opts)
-
+  opts = opts or {}
+  M.split_on_top = opts.split_on_top or true
+  M.menu_height = opts.menu_height or 13
+  M.store_hooks = opts.store_hooks or {
+    before_mksession = nil,
+    after_mksession = nil,
+  }
+  M.restore_hooks = opts.restore_hooks or {
+    before_source = nil,
+    after_source = nil,
+  }
 end
 
 function M.toggle_menu()
@@ -114,7 +112,6 @@ function M.toggle_menu()
   if the_qflist_is_open() then vim.cmd('ccl') return end
 
   print("Suave: You're ready to suave!")
-  disable_local_qf_highlight()
 
   -- prepare items by browsing .suave/.
   local items = {}
@@ -136,7 +133,8 @@ function M.toggle_menu()
   -- open a qflist window at the top.
   -- TODO: setup size via config.
   if the_qflist_did_build() then
-    vim.cmd('top copen 13')
+    vim.cmd('top copen ' .. M.menu_height)
+    disable_local_qf_highlight()
   end
 end
 
@@ -152,7 +150,7 @@ function M.store_session(auto)
 
   -- deal with auto case
   if auto then -- just overwrite the default
-    vim.cmd('mksession! ./.suave/default.vim')
+    vim.cmd('mksession! ./' .. FOLDER_NAME .. '/default.vim')
   else
     local input = vim.fn.input('Enter a name for the current session: ')
     if input == '' or input:match('^%s+$') then -- nothing added.
@@ -160,7 +158,7 @@ function M.store_session(auto)
       return
     end
     -- TODO: confirm overwrite on name repeat.
-    vim.cmd('mksession! ./.suave/' .. input .. '.vim')
+    vim.cmd('mksession! ./' .. FOLDER_NAME .. '/' .. input .. '.vim')
   end
 
   -- run post-store-hooks

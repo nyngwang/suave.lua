@@ -104,8 +104,8 @@ function M.toggle_menu()
   for dir in io.popen([[ find .suave -name '*.vim' ]]):lines() do
     items[#items+1] = {
       filename = vim.fn.fnamemodify(dir, ':t'),
+      lnum = tonumber(string.sub(io.popen([[ stat -f %Sm -t %Y%m%d%H%M ]] .. dir):read(), 3, 10)), -- timestamp
       -- TODO: should maintain a mapping file to store users' note on each session.
-      lnum = 299792458,
       text = '',
     }
   end

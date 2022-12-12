@@ -1,6 +1,7 @@
 local NOREF_NOERR_TRUNC = { noremap = true, silent = true, nowait = true }
 local NOREF_NOERR = { noremap = true, silent = true }
 local EXPR_NOREF_NOERR_TRUNC = { expr = true, noremap = true, silent = true, nowait = true }
+vim.api.nvim_create_augroup('suave.lua', { clear = true })
 ---------------------------------------------------------------------------------------------------
 local M = {}
 local FOLDER_NAME = '.suave'
@@ -69,21 +70,34 @@ local function the_qflist_is_open()
   return get_the_qflist_winid()
 end
 
-local function cursor_is_not_at_the_qflist()
-  if vim.bo.buftype ~= 'quickfix'
-    or vim.fn.getqflist({ id=0 }).id ~= get_the_qflist_id() then
-    return false
+local function cursor_is_at_the_qflist()
+  if get_the_qflist_winid() == vim.api.nvim_get_current_win() then return true end
+  return false
+end
+
+local function _disable_local_qf_highlight()
+  if cursor_is_at_the_qflist() then
+    vim.cmd([[
+      hi __SUAVE_QF_DISABLE guibg=NONE guifg=Directory
+      hi __SUAVE_NO_CURSORLINE guibg=NONE guifg=NONE
+    ]])
+    vim.cmd('set winhl=QuickFixLine:__SUAVE_QF_DISABLE,CursorLine:__SUAVE_NO_CURSORLINE')
   end
-  return true
 end
 
 local function disable_local_qf_highlight()
-  vim.cmd([[
-    hi __SUAVE_QF_DISABLE guibg=NONE guifg=Directory
-    hi __SUAVE_NO_CURSORLINE guibg=NONE guifg=NONE
-  ]])
-  vim.cmd('set winhl=QuickFixLine:__SUAVE_QF_DISABLE,CursorLine:__SUAVE_NO_CURSORLINE')
+  vim.api.nvim_create_autocmd({ 'BufWinEnter' }, {
+    group = 'suave.lua',
+    pattern = 'quickfix',
+    callback = function () _disable_local_qf_highlight() end
+  })
+  vim.api.nvim_create_autocmd({ 'BufEnter' }, {
+    group = 'suave.lua',
+    pattern = '*', -- match against qf name.
+    callback = function () _disable_local_qf_highlight() end
+  })
 end
+disable_local_qf_highlight()
 
 ---------------------------------------------------------------------------------------------------
 
@@ -134,14 +148,13 @@ function M.toggle_menu()
   -- TODO: setup size via config.
   if the_qflist_did_build() then
     vim.cmd('top copen ' .. M.menu_height)
-    disable_local_qf_highlight()
   end
 end
 
 function M.store_session(auto)
   if not suave_folder_is_there() then return end
 
-  if not auto and cursor_is_not_at_the_qflist() then
+  if not auto and not cursor_is_at_the_qflist() then
     print("Suave: Move your cursor to the menu to store session")
     return
   end

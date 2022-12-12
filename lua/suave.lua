@@ -81,6 +81,14 @@ local function the_qflist_is_open()
   return get_the_qflist_winid()
 end
 
+local function disable_local_qf_highlight()
+  vim.cmd([[
+    hi __SUAVE_QF_DISABLE guibg=NONE guifg=Directory
+    hi __SUAVE_NO_CURSORLINE guibg=NONE guifg=NONE
+  ]])
+  vim.cmd('set winhl=QuickFixLine:__SUAVE_QF_DISABLE,CursorLine:__SUAVE_NO_CURSORLINE')
+end
+
 ---------------------------------------------------------------------------------------------------
 
 function M.setup(opts)
@@ -98,6 +106,7 @@ function M.toggle_menu()
   if the_qflist_is_open() then vim.cmd('ccl') return end
 
   print("Suave: You're ready to suave!")
+  disable_local_qf_highlight()
 
   -- prepare items by browsing .suave/.
   local items = {}

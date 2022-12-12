@@ -20,13 +20,18 @@ suave.lua
   - hint user this a `suave` project.
   - restore session by keymap.
   - remove session by keymap.
-  - 
+  - the menu item:
+    - timestamp
+    - note
+- 
 
 
 ## TODO
 
 - handle the `default.vim` session
-- handle the `default.vim` session
+  - handle the `default.vim` session
+- be able to add one note for each session
+- be able to change note for each session
 
 
 

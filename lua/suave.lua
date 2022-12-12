@@ -105,6 +105,7 @@ function M.toggle_menu()
     items[#items+1] = {
       filename = vim.fn.fnamemodify(dir, ':t'),
       -- TODO: should maintain a mapping file to store users' note on each session.
+      lnum = 299792458,
       text = '',
     }
   end

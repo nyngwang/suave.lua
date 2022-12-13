@@ -1,6 +1,3 @@
-local NOREF_NOERR_TRUNC = { noremap = true, silent = true, nowait = true }
-local NOREF_NOERR = { noremap = true, silent = true }
-local EXPR_NOREF_NOERR_TRUNC = { expr = true, noremap = true, silent = true, nowait = true }
 vim.api.nvim_create_augroup('suave.lua', { clear = true })
 ---------------------------------------------------------------------------------------------------
 local M = {}
@@ -16,41 +13,41 @@ local function total_qflists()
   return vim.fn.getqflist({ nr='$' }).nr
 end
 
-local function get_the_qflist_id()
+local function get_menu_id()
   for i = 1, total_qflists() do
     if vim.fn.getqflist({ nr=i, title=0 }).title == FOLDER_NAME
       then return vim.fn.getqflist({ nr=i, id=0 }).id end
   end
   local z_on_s = vim.fn.setqflist({}, ' ', { nr='$', title=FOLDER_NAME })
   if z_on_s ~= 0 then
-    print('Suave: Failed to create suave list!')
+    print('Suave: Failed to create suave menu!')
     return nil
   end
-  return get_the_qflist_id()
+  return get_menu_id()
 end
 
-local function the_qflist_did_build()
-  return get_the_qflist_id()
+local function the_menu_did_build()
+  return get_menu_id()
 end
 
-local function get_the_qflist_winid()
-  local qflist_id = get_the_qflist_id()
-  if not qflist_id then return nil end
-  local winid = vim.fn.getqflist({ id=qflist_id, winid=0 }).winid
+local function get_the_menu_winid()
+  local id = get_menu_id()
+  if not id then return nil end
+  local winid = vim.fn.getqflist({ id=id, winid=0 }).winid
   return winid > 0 and winid or nil
 end
 
-local function the_qflist_is_open()
-  return get_the_qflist_winid()
+local function the_menu_is_open()
+  return get_the_menu_winid()
 end
 
-local function cursor_is_at_the_qflist()
-  if get_the_qflist_winid() == vim.api.nvim_get_current_win() then return true end
+local function cursor_is_at_the_menu()
+  if get_the_menu_winid() == vim.api.nvim_get_current_win() then return true end
   return false
 end
 
 local function _disable_local_qf_highlight()
-  if cursor_is_at_the_qflist() then
+  if cursor_is_at_the_menu() then
     vim.cmd([[
       hi __SUAVE_QF_DISABLE guibg=NONE guifg=Directory
       hi __SUAVE_NO_CURSORLINE guibg=NONE guifg=NONE
@@ -89,7 +86,7 @@ function M.setup(opts)
   }
 end
 
-local function _refresh_the_qflist()
+local function _refresh_the_menu()
   -- prepare items by browsing .suave/.
   local items = {}
   for dir in io.popen([[ find .suave -name '*.vim' ]]):lines() do
@@ -102,7 +99,7 @@ local function _refresh_the_qflist()
   end
   -- populate those items
   vim.fn.setqflist({}, 'r', {
-    id = get_the_qflist_id(),
+    id = get_menu_id(),
     items = items,
   })
 end
@@ -115,15 +112,15 @@ function M.toggle_menu()
     return
   end
 
-  if the_qflist_is_open() then vim.cmd('ccl') return end
+  if the_menu_is_open() then vim.cmd('ccl') return end
 
   print("Suave: You're ready to suave!")
 
-  _refresh_the_qflist()
+  _refresh_the_menu()
 
   -- open a qflist window at the top.
   -- TODO: setup size via config.
-  if the_qflist_did_build() then
+  if the_menu_did_build() then
     vim.cmd('top copen ' .. M.menu_height)
   end
 end
@@ -131,7 +128,7 @@ end
 function M.store_session(auto)
   if not suave_folder_is_there() then return end
 
-  if not auto and not cursor_is_at_the_qflist() then
+  if not auto and not cursor_is_at_the_menu() then
     print("Suave: Move your cursor to the menu to store session")
     return
   end
@@ -175,7 +172,7 @@ end
 function M.restore_session(auto)
   if not suave_folder_is_there() then return end
 
-  if not auto and not cursor_is_at_the_qflist() then
+  if not auto and not cursor_is_at_the_menu() then
     print("Suave: Move your cursor to the menu to restore session")
     return
   end

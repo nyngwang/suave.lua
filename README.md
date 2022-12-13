@@ -11,8 +11,7 @@ Suave.lua aims to be a standalone beginner-friendly auto-session plugin for NeoV
 
 ## Intro.
 
-(TBU)
-
+https://user-images.githubusercontent.com/24765272/207277797-88682d65-fe22-41a1-9155-b20e23a0205b.mov
 
 Suave.lua is all about project session automation, it can:
 
@@ -101,8 +100,6 @@ use {
 
 ## TODO
 
-- finish README.md
-  - add DEMO
 - be able to add one note for each session
 - be able to change note for each session
 

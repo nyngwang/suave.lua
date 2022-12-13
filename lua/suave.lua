@@ -4,7 +4,7 @@ local M = {}
 local FOLDER_NAME = '.suave'
 
 ---------------------------------------------------------------------------------------------------
-local function suave_folder_is_there()
+function M.suave_folder_is_there()
   local yes, _, code = os.rename(FOLDER_NAME, FOLDER_NAME)
   return yes or (code == 13)
 end
@@ -81,7 +81,7 @@ end
 
 function M.toggle_menu()
   -- hint the user whether the current dir is suave root.
-  if not suave_folder_is_there() then
+  if not M.suave_folder_is_there() then
     -- TODO: hint users to do init.
     print("Suave: You haven't init suave!")
     return
@@ -101,7 +101,7 @@ function M.toggle_menu()
 end
 
 function M.store_session(auto)
-  if not suave_folder_is_there() then return end
+  if not M.suave_folder_is_there() then return end
 
   if not auto and not cursor_is_at_the_menu() then
     print("Suave: Move your cursor to the menu to store session")
@@ -145,7 +145,7 @@ function M.store_session(auto)
 end
 
 function M.restore_session(auto)
-  if not suave_folder_is_there() then return end
+  if not M.suave_folder_is_there() then return end
 
   if not auto and not cursor_is_at_the_menu() then
     print("Suave: Move your cursor to the menu to restore session")

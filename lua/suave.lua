@@ -108,8 +108,7 @@ function M.store_session(auto)
     return
   end
 
-  -- should temp.ly close the menu.
-  if not auto then M.toggle_menu() end
+  if not auto or the_menu_is_open() then M.toggle_menu() end
 
   -- run pre-store-hooks
   if M.store_hooks.before_mksession ~= nil then

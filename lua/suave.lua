@@ -193,9 +193,10 @@ function M.restore_session(auto)
   else
     local items = vim.fn.getqflist({ items = 0 }).items
     local idx = vim.fn.line('.')
+    local fname = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(items[idx].bufnr), ':t')
     M.toggle_menu() -- can close the menu upon idx get.
 
-    vim.cmd('silent! source ./' .. FOLDER_NAME .. '/' .. items[idx].filename .. '.vim')
+    vim.cmd('silent! source ./' .. FOLDER_NAME .. '/' .. fname)
   end
 
   -- run post-restore-hooks

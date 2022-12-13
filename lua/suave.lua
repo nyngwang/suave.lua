@@ -163,12 +163,12 @@ function M.store_session(auto)
   end
 
   -- should temp.ly close the menu.
-  M.toggle_menu()
+  if not auto then M.toggle_menu() end
 
   -- run pre-store-hooks
   if M.store_hooks.before_mksession ~= nil then
-    for _, cb in ipairs(M.store_hooks.before_mksession) do
-      if type(cb) then cb() end
+    for _, hook in ipairs(M.store_hooks.before_mksession) do
+      if type(hook) == 'function' then hook() end
     end
   end
 
@@ -193,7 +193,7 @@ function M.store_session(auto)
   end
 
   -- restore the menu.
-  M.toggle_menu()
+  if not auto then M.toggle_menu() end
 end
 
 

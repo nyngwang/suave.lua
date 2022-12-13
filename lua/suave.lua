@@ -46,32 +46,7 @@ local function cursor_is_at_the_menu()
   return false
 end
 
-local function _disable_local_qf_highlight()
-  if cursor_is_at_the_menu() then
-    vim.cmd([[
-      hi __SUAVE_QF_DISABLE guibg=NONE guifg=Directory
-      hi __SUAVE_NO_CURSORLINE guibg=NONE guifg=NONE
-    ]])
-    vim.cmd('set winhl=QuickFixLine:__SUAVE_QF_DISABLE,CursorLine:__SUAVE_NO_CURSORLINE')
-  end
-end
-
-local function disable_local_qf_highlight()
-  vim.api.nvim_create_autocmd({ 'BufWinEnter' }, {
-    group = 'suave.lua',
-    pattern = 'quickfix',
-    callback = function () _disable_local_qf_highlight() end
-  })
-  vim.api.nvim_create_autocmd({ 'BufEnter' }, {
-    group = 'suave.lua',
-    pattern = '*', -- match against qf name.
-    callback = function () _disable_local_qf_highlight() end
-  })
-end
-disable_local_qf_highlight()
-
 ---------------------------------------------------------------------------------------------------
-
 function M.setup(opts)
   opts = opts or {}
   M.split_on_top = opts.split_on_top or true
@@ -202,9 +177,31 @@ function M.restore_session(auto)
       if type(hook) == 'function' then hook() end
     end
   end
-
-
 end
+
+---------------------------------------------------------------------------------------------------
+local function disable_local_qf_highlight()
+  local function _disable_local_qf_highlight()
+    if cursor_is_at_the_menu() then
+      vim.cmd([[
+        hi __SUAVE_QF_DISABLE guibg=NONE guifg=Directory
+        hi __SUAVE_NO_CURSORLINE guibg=NONE guifg=NONE
+      ]])
+      vim.cmd('set winhl=QuickFixLine:__SUAVE_QF_DISABLE,CursorLine:__SUAVE_NO_CURSORLINE')
+    end
+  end
+  vim.api.nvim_create_autocmd({ 'BufWinEnter' }, {
+    group = 'suave.lua',
+    pattern = 'quickfix',
+    callback = function () _disable_local_qf_highlight() end
+  })
+  vim.api.nvim_create_autocmd({ 'BufEnter' }, {
+    group = 'suave.lua',
+    pattern = '*', -- match against qf name.
+    callback = function () _disable_local_qf_highlight() end
+  })
+end
+disable_local_qf_highlight()
 
 
 return M

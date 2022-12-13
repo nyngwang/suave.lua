@@ -7,32 +7,6 @@ local M = {}
 local FOLDER_NAME = '.suave'
 
 ---------------------------------------------------------------------------------------------------
--- to restore session:
---   one can only restore session when the cursor is hover on the menu.
---
---   should check the `.suave` has been inited. (check default)
---
---   two paths:
---   autocmd restore: this is done automatically via auto coommand
---     the autocmd will try to restore the session with name default
---
---   manual restore: this is done after they chose one from non-deafult
---     maby i dont need to ehcke anything ehrer since it mujst have been done when collectign menu
---
--- to prompt something to user:
---
---   to specify session name (check repeat)
---   to specify note about this session (optional)
---
--- to list all sessoin of current project:
---
---   upon selection, should duplicate that session and rename it to default.
---
--- 
--- to make use of autocmd for storing/restoring the `default` session.
---
--- 
----------------------------------------------------------------------------------------------------
 local function suave_folder_is_there()
   local yes, _, code = os.rename(FOLDER_NAME, FOLDER_NAME)
   return yes or (code == 13)
@@ -183,6 +157,8 @@ function M.store_session(auto)
     end
     -- TODO: confirm overwrite on name repeat.
     vim.cmd('mksession! ./' .. FOLDER_NAME .. '/' .. input .. '.vim')
+
+    -- TODO: get & save note from user.
   end
 
   -- run post-store-hooks
@@ -196,6 +172,41 @@ function M.store_session(auto)
   if not auto then M.toggle_menu() end
 end
 
+function M.restore_session(auto)
+  if not suave_folder_is_there() then return end
+
+  if not auto and not cursor_is_at_the_qflist() then
+    print("Suave: Move your cursor to the menu to restore session")
+    return
+  end
+
+  -- run pre-restore-hooks
+  if M.restore_hooks.before_source ~= nil then
+    for _, hook in ipairs(M.restore_hooks.before_source) do
+      if type(hook) == 'function' then hook() end
+    end
+  end
+
+  -- deal with auto case
+  if auto then -- just overwrite the default
+    vim.cmd('silent! source ./' .. FOLDER_NAME .. '/default.vim')
+  else
+    local items = vim.fn.getqflist({ items = 0 }).items
+    local idx = vim.fn.line('.')
+    M.toggle_menu() -- can close the menu upon idx get.
+
+    vim.cmd('silent! source ./' .. FOLDER_NAME .. '/' .. items[idx].filename .. '.vim')
+  end
+
+  -- run post-restore-hooks
+  if M.restore_hooks.after_source ~= nil then
+    for _, hook in ipairs(M.restore_hooks.after_source) do
+      if type(hook) == 'function' then hook() end
+    end
+  end
+
+
+end
 
 
 return M

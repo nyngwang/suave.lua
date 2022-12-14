@@ -58,8 +58,11 @@ use {
       store_hooks = {
         before_mksession = {
           function ()
-            -- vim.cmd('tabd Neotree close')
-            -- vim.cmd('tabn')
+            -- for _, w in ipairs(vim.api.nvim_list_wins()) do
+            --   if vim.api.nvim_buf_get_option(vim.api.nvim_win_get_buf(w), 'ft') == 'neo-tree' then
+            --     vim.api.nvim_win_close(w, false)
+            --   end
+            -- end
           end,
           function () end,
         },

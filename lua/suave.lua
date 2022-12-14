@@ -4,8 +4,15 @@ local M = {}
 local FOLDER_NAME = '.suave'
 
 ---------------------------------------------------------------------------------------------------
+local function get_project_suave_path()
+  return vim.fn.getcwd(-1, -1) .. '/' .. FOLDER_NAME
+end
+
+
 function M.suave_folder_is_there()
-  local yes, _, code = os.rename(FOLDER_NAME, FOLDER_NAME)
+  -- assume users won't call `cd` when they want to change the path for each new tab created.
+  local project_suave_path = get_project_suave_path()
+  local yes, _, code = os.rename(project_suave_path, project_suave_path)
   return yes or (code == 13)
 end
 
@@ -64,7 +71,7 @@ end
 local function _refresh_the_menu()
   -- prepare items by browsing .suave/.
   local items = {}
-  for dir in io.popen([[ find .suave -name '*.vim' ]]):lines() do
+  for dir in io.popen([[ find ]] .. get_project_suave_path() .. [[ -name '*.vim' ]]):lines() do
     items[#items+1] = {
       filename = vim.fn.fnamemodify(dir, ':t'),
       lnum = tonumber(string.sub(io.popen([[ stat -f %Sm -t %Y%m%d%H%M ]] .. dir):read(), 3, 10)), -- timestamp
@@ -119,7 +126,7 @@ function M.store_session(auto)
 
   -- deal with auto case
   if auto then -- just overwrite the default
-    vim.cmd('mksession! ./' .. FOLDER_NAME .. '/default.vim')
+    vim.cmd('mksession! ' .. get_project_suave_path() .. '/default.vim')
   else
     local input = vim.fn.input('Enter a name for the current session: ')
     if input == '' or input:match('^%s+$') then -- nothing added.
@@ -127,7 +134,7 @@ function M.store_session(auto)
       return
     end
     -- TODO: confirm overwrite on name repeat.
-    vim.cmd('mksession! ./' .. FOLDER_NAME .. '/' .. input .. '.vim')
+    vim.cmd('mksession! ' .. get_project_suave_path() .. '/' .. input .. '.vim')
 
     -- TODO: get & save note from user.
   end
@@ -160,14 +167,14 @@ function M.restore_session(auto)
 
   -- deal with auto case
   if auto then -- just overwrite the default
-    vim.cmd('silent! source ./' .. FOLDER_NAME .. '/default.vim')
+    vim.cmd('silent! source ' .. get_project_suave_path() .. '/default.vim')
   else
     local items = vim.fn.getqflist({ items = 0 }).items
     local idx = vim.fn.line('.')
     local fname = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(items[idx].bufnr), ':t')
     M.toggle_menu() -- can close the menu upon idx get.
 
-    vim.cmd('silent! source ./' .. FOLDER_NAME .. '/' .. fname)
+    vim.cmd('silent! source ' .. get_project_suave_path() .. '/' .. fname)
   end
 
   -- run post-restore-hooks

@@ -72,27 +72,50 @@ use {
     }
 
     -- Uncomment the following lines to enable project session automation
-    -- NOTE: the `vim.fn.argc() == 0` is required to avoid restoring on `git commit`.
-    -- NOTE: so to trigger auto session, you should run `nvim`, i.e. without any argument.
+    -- NOTE: if you always call `tcd` instead of `cd` on all tabpages,
+    --       you can stay in the current project and suave.lua will remember these paths.
+    -- NOTE: the `vim.fn.argc() == 0` is required to exclude `git commit`.
+    -- NOTE: the `not vim.v.event.changed_window` is required to exclude `:tabn`,`:tabp`.
 
-    -- vim.api.nvim_create_autocmd({ 'VimLeave', 'DirChangedPre' }, {
-    --   group = 'session.lua',
-    --   pattern = '*',
-    --   callback = function ()
-    --     if suave.suave_folder_is_there() and vim.fn.argc() == 0 then
-    --       suave.store_session(true)
-    --     end
-    --   end
-    -- })
-    -- vim.api.nvim_create_autocmd({ 'VimEnter', 'DirChanged' }, {
-    --   group = 'session.lua',
-    --   pattern = '*',
-    --   callback = function ()
-    --     if suave.suave_folder_is_there() and vim.fn.argc() == 0 then
-    --       suave.restore_session(true)
-    --     end
-    --   end
-    -- })
+    vim.api.nvim_create_autocmd({ 'VimLeavePre' }, {
+      group = 'session.lua',
+      pattern = '*',
+      callback = function ()
+        if vim.fn.argc() == 0 -- not git
+          and not vim.v.event.dying -- safe leave
+          then suave.store_session(true)
+        end
+      end
+    })
+    vim.api.nvim_create_autocmd({ 'DirChangedPre' }, {
+      group = 'session.lua',
+      pattern = 'global',
+      callback = function ()
+        if vim.fn.argc() == 0 -- not git
+          and not vim.v.event.changed_window -- it's cd
+          then suave.store_session(true)
+        end
+      end
+    })
+    vim.api.nvim_create_autocmd({ 'VimEnter' }, {
+      group = 'session.lua',
+      pattern = '*',
+      callback = function ()
+        if vim.fn.argc() == 0 -- not git
+          then suave.restore_session(true)
+        end
+      end
+    })
+    vim.api.nvim_create_autocmd({ 'DirChanged' }, {
+      group = 'session.lua',
+      pattern = 'global',
+      callback = function ()
+        if vim.fn.argc() == 0 -- not git
+          and not vim.v.event.changed_window -- it's cd
+          then suave.restore_session(true)
+        end
+      end
+    })
   end
 }
 ```

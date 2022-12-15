@@ -20,7 +20,7 @@ local function total_qflists()
   return vim.fn.getqflist({ nr='$' }).nr
 end
 
-local function get_menu_id()
+local function get_the_menu_id()
   for i = 1, total_qflists() do
     if vim.fn.getqflist({ nr=i, title=0 }).title == FOLDER_NAME
       then return vim.fn.getqflist({ nr=i, id=0 }).id end
@@ -30,15 +30,19 @@ local function get_menu_id()
     print('Suave: Failed to create suave menu!')
     return nil
   end
-  return get_menu_id()
+  return get_the_menu_id()
+end
+
+local function switch_to_the_menu()
+  vim.cmd('chi ' .. vim.fn.getqflist({ id=get_the_menu_id(), nr=0 }).nr)
 end
 
 local function the_menu_did_build()
-  return get_menu_id()
+  return get_the_menu_id()
 end
 
 local function get_the_menu_winid()
-  local id = get_menu_id()
+  local id = get_the_menu_id()
   if not id then return nil end
   local winid = vim.fn.getqflist({ id=id, winid=0 }).winid
   return winid > 0 and winid or nil
@@ -81,7 +85,7 @@ local function _refresh_the_menu()
   end
   -- populate those items
   vim.fn.setqflist({}, 'r', {
-    id = get_menu_id(),
+    id = get_the_menu_id(),
     items = items,
   })
 end
@@ -98,11 +102,10 @@ function M.toggle_menu()
 
   print("Suave: You're ready to suave!")
 
-  _refresh_the_menu()
-
   -- open a qflist window at the top.
-  -- TODO: setup size via config.
   if the_menu_did_build() then
+    _refresh_the_menu()
+    switch_to_the_menu()
     vim.cmd('top copen ' .. M.menu_height)
   end
 end
@@ -169,7 +172,7 @@ function M.restore_session(auto)
   if auto then -- just overwrite the default
     vim.cmd('silent! source ' .. get_project_suave_path() .. '/default.vim')
   else
-    local items = vim.fn.getqflist({ items = 0 }).items
+    local items = vim.fn.getqflist({ items=0 }).items
     local idx = vim.fn.line('.')
     local fname = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(items[idx].bufnr), ':t')
     M.toggle_menu() -- can close the menu upon idx get.

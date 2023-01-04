@@ -1,10 +1,9 @@
 suave.lua
 ===
 
-<span style="color:red;font-size:25px">S</span>ession?
-L<span style="color:red;font-size:25px">ua</span>?
-for <span style="color:red;font-size:25px">V</span>im
-<span style="color:red;font-size:25px">E</span>nthusiast
+SUAVE is a quasi-acronym of "Session in LUA for Vim Enthusiasts."
+
+(Not a decent name for a native speaker, but it's OK to be low-key so only me can enjoy this 🤫)
 
 Suave.lua aims to be a standalone beginner-friendly auto-session plugin for NeoVim beginners.
 
@@ -30,26 +29,29 @@ Now you can:
 ## Manual
 
 - To start using suave.lua, just `mkdir .suave/` at your project root.
-  - I will put all your sessions into this folder.
-  - Now you can manage your session along with your project.
-- The core idea is pretty simple:
-  - Suave.lua has one and only one menu. (Actually, it's a quickfix list)
-  - You can use the menu to list all sessions of your current project.
+  - All your sessions will be stored into this folder.
+  - Now you can keep all your sessions along with your project. (No more "where are my sessions?")
+- The core idea is very simple:
+  - Suave.lua has only one menu. (Actually, it's a quickfix list)
+  - The menu lists all sessions created for your current project.
   - To execute any command I provided, you have to open the menu first.
-    - if you never open the menu, you will never encounter any trouble. (beginner-friendly :))
-  - That's it.
+    - if you never open the menu, you will never encounter any trouble. (No deletion by accidents)
+- That's it.
 - Addons:
   - [x] The menu can show the last-modified-timestamp of each session.
   - [x] Show how to achieve "auto-session" by `autocmd` in README.md.
   - [ ] The command for you to add note to each session file.
 
-## Setup
 
-packer.nvim:
+## Setup Example
+
+Works with:
+- folke/lazy.nvim: simply remove the `use`.
+- wbthomason/packer.nvim: exact copy.
 
 ```lua
 use {
-  'nyngwang/suave.lua', disable = false,
+  'nyngwang/suave.lua',
   config = function ()
     local suave = require('suave')
     suave.setup {
@@ -64,7 +66,11 @@ use {
             --   end
             -- end
           end,
-          function () end,
+          function ()
+            -- do your stuff here.
+            -- WARN: DON'T call `vim.cmd('wa')` here.
+            --       (leads to so silent error that basically disable auto-session!)
+          end,
         },
         after_mksession = {},
       },
@@ -73,15 +79,13 @@ use {
         after_source = {},
       }
     }
-
-    -- Uncomment the following lines to enable project session automation
+    -- Uncomment the following lines to enable project session automation.
     -- NOTE: if you always call `tcd` instead of `cd` on all tabpages,
     --       you can stay in the current project and suave.lua will remember these paths.
     -- NOTE: the `vim.fn.argc() == 0` is required to exclude `git commit`.
     -- NOTE: the `not vim.v.event.changed_window` is required to exclude `:tabn`,`:tabp`.
-
+    -- INFO: While not included, it's recommended to use `group = ...` for your autocmd.
     vim.api.nvim_create_autocmd({ 'VimLeavePre' }, {
-      group = 'session.lua',
       pattern = '*',
       callback = function ()
         if vim.fn.argc() == 0 -- not git
@@ -91,7 +95,6 @@ use {
       end
     })
     vim.api.nvim_create_autocmd({ 'DirChangedPre' }, {
-      group = 'session.lua',
       pattern = 'global',
       callback = function ()
         if vim.fn.argc() == 0 -- not git
@@ -101,7 +104,6 @@ use {
       end
     })
     vim.api.nvim_create_autocmd({ 'VimEnter' }, {
-      group = 'session.lua',
       pattern = '*',
       callback = function ()
         if vim.fn.argc() == 0 -- not git
@@ -110,7 +112,6 @@ use {
       end
     })
     vim.api.nvim_create_autocmd({ 'DirChanged' }, {
-      group = 'session.lua',
       pattern = 'global',
       callback = function ()
         if vim.fn.argc() == 0 -- not git

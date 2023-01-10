@@ -1,12 +1,12 @@
 vim.api.nvim_create_augroup('suave.lua', { clear = true })
 ---------------------------------------------------------------------------------------------------
 local M = {}
-local FOLDER_NAME = '.suave'
+local PROJECT_NAME = 'suave'
 
 
 local function get_project_suave_path()
   -- This implicitly assume that every project should have one fixed `cd`.
-  return vim.fn.getcwd(-1, -1) .. '/' .. FOLDER_NAME
+  return string.format('%s/.%s', vim.fn.getcwd(-1, -1), PROJECT_NAME)
 end
 
 
@@ -17,11 +17,11 @@ end
 
 local function get_the_menu_id()
   for i = 1, total_qflists() do
-    if vim.fn.getqflist({ nr=i, title=0 }).title == FOLDER_NAME then
+    if vim.fn.getqflist({ nr=i, title=0 }).title == PROJECT_NAME then
       return vim.fn.getqflist({ nr=i, id=0 }).id
     end
   end
-  local zero_on_success = vim.fn.setqflist({}, ' ', { nr='$', title=FOLDER_NAME })
+  local zero_on_success = vim.fn.setqflist({}, ' ', { nr='$', title=PROJECT_NAME })
   if zero_on_success ~= 0 then
     print('Suave: Failed to create suave menu!')
     return nil
@@ -117,18 +117,19 @@ function M.setup(opts)
 end
 
 
-function M.suave_folder_is_there()
-  local project_suave_path = get_project_suave_path()
-  local yes, _, code = os.rename(project_suave_path, project_suave_path)
+function M.folder_is_there(target_folder)
+  if not target_folder then
+    target_folder = get_project_suave_path()
+  end
+  local yes, _, code = os.rename(target_folder, target_folder)
   return yes or (code == 13)
 end
 
 
 function M.toggle_menu()
   -- hint the user whether the current dir is suave root.
-  if not M.suave_folder_is_there() then
-    -- TODO: hint users to do init.
-    print("Suave: You haven't init suave!")
+  if not M.folder_is_there() then
+    print("Suave: Please create a hidden folder `.suave/` at your project root first!")
     return
   end
 
@@ -146,7 +147,7 @@ end
 
 
 function M.store_session(auto)
-  if not M.suave_folder_is_there() then return end
+  if not M.folder_is_there() then return end
 
   if not auto and not cursor_is_at_the_menu() then
     print("Suave: Please move your cursor to the menu window to store session!")
@@ -190,7 +191,7 @@ end
 
 
 function M.restore_session(auto)
-  if not M.suave_folder_is_there() then return end
+  if not M.folder_is_there() then return end
 
   if not auto and not cursor_is_at_the_menu() then
     print("Suave: Please move your cursor to the menu window to restore session!")

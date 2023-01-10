@@ -2,10 +2,10 @@ vim.api.nvim_create_augroup('suave.lua', { clear = true })
 ---------------------------------------------------------------------------------------------------
 local M = {}
 local PROJECT_NAME = 'suave'
-local PROJECT_DATA_NAME = 'storage'
+local PROJECT_JSON_NAME = string.format('%s_storage', PROJECT_NAME)
 
 
-local function get_project_suave_path()
+local function get_project_session_folder_path()
   -- This implicitly assume that every project should have one fixed `cd`.
   return string.format('%s/.%s', vim.fn.getcwd(-1, -1), PROJECT_NAME)
 end
@@ -34,7 +34,7 @@ end
 local function refresh_the_menu()
   -- prepare items.
   local items = {}
-  for dir in io.popen([[ find ]] .. get_project_suave_path() .. [[ -name '*.vim' ]]):lines() do
+  for dir in io.popen([[ find ]] .. get_project_session_folder_path() .. [[ -name '*.vim' ]]):lines() do
     items[#items+1] = {
       filename = vim.fn.fnamemodify(dir, ':t'),
       lnum = tonumber(string.sub(io.popen([[ stat -f %Sm -t %Y%m%d%H%M ]] .. dir):read(), 3, 10)), -- timestamp
@@ -79,6 +79,57 @@ local function cursor_is_at_the_menu()
 end
 
 
+local function get_project_json_path()
+  return string.format('%s/%s.json', get_project_session_folder_path(), PROJECT_JSON_NAME)
+end
+
+
+local function read_from_project_json()
+  local fp = io.open(get_project_json_path(), 'r')
+  if not fp then
+    print("Suave: fetching file handler for reading ... failed!")
+    return false
+  end
+  local data = vim.json.decode(fp:read("*a"))
+  fp:close()
+  print("Suave: reading project file ... succeeded!")
+  return true, data
+end
+
+
+local function write_to_project_json(data)
+  if type(data) ~= 'table' then
+    print("Suave: data should be a Lua table!")
+    return false
+  end
+  local fp = io.open(get_project_json_path(), 'w+')
+  if not fp then
+    print("Suave: fetching file handler for writing ... failed!")
+    return false
+  end
+  fp:write(vim.json.encode(data))
+  fp:close()
+  print("Suave: write to project file ... success!")
+  return true
+end
+
+
+local function get_or_create_project_file_data()
+  if not M.folder_or_file_is_there(get_project_json_path()) then
+    vim.cmd(string.format('!touch %s', get_project_json_path()))
+    write_to_project_json({})
+    print("Suave: A default project file has been created under the `.suave/` folder!")
+    return true, {}
+  end
+
+  -- read the table and return
+  local succeeded, read = read_from_project_json()
+  if not succeeded then return false end
+  print("Suave: A default project file has been created under `.suave/` folder!")
+  return true, read
+end
+
+
 local function disable_local_qf_highlight()
   local function _call_hl()
     vim.cmd([[
@@ -118,7 +169,7 @@ end
 
 function M.folder_or_file_is_there(target_path)
   if not target_path then
-    target_path = get_project_suave_path()
+    target_path = get_project_session_folder_path()
   end
   local yes, _, code = os.rename(target_path, target_path)
   return yes or (code == 13)
@@ -164,7 +215,7 @@ function M.store_session(auto)
 
   -- deal with auto case
   if auto then -- just overwrite the default
-    vim.cmd('mksession! ' .. get_project_suave_path() .. '/default.vim')
+    vim.cmd('mksession! ' .. get_project_session_folder_path() .. '/default.vim')
   else
     local input = vim.fn.input('Enter a name for the current session: ')
     if input == '' or input:match('^%s+$') then -- nothing added.
@@ -172,9 +223,16 @@ function M.store_session(auto)
       return
     end
     -- TODO: confirm overwrite on name repeat.
-    vim.cmd('mksession! ' .. get_project_suave_path() .. '/' .. input .. '.vim')
+    vim.cmd('mksession! ' .. get_project_session_folder_path() .. '/' .. input .. '.vim')
 
     -- TODO: get & save note from user.
+  end
+
+  -- store data
+  local succeed, data = get_or_create_project_file_data()
+  if succeed and type(data) == 'table' then
+    data.colors_name = vim.g.colors_name
+    write_to_project_json(data)
   end
 
   -- run post-store-hooks
@@ -206,14 +264,23 @@ function M.restore_session(auto)
 
   -- deal with auto case
   if auto then -- just overwrite the default
-    vim.cmd('silent! source ' .. get_project_suave_path() .. '/default.vim')
+    vim.cmd('silent! source ' .. get_project_session_folder_path() .. '/default.vim')
   else
     local items = vim.fn.getqflist({ items=0 }).items
     local idx = vim.fn.line('.')
     local fname = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(items[idx].bufnr), ':t')
     M.toggle_menu() -- can close the menu upon idx get.
 
-    vim.cmd('silent! source ' .. get_project_suave_path() .. '/' .. fname)
+    vim.cmd('silent! source ' .. get_project_session_folder_path() .. '/' .. fname)
+  end
+
+  -- restore data
+  local succeed, data = get_or_create_project_file_data()
+  if succeed and type(data) == 'table' then
+    vim.cmd(string.format([[
+      color %s
+      doau ColorScheme %s
+    ]], data.colors_name, data.colors_name))
   end
 
   -- run post-restore-hooks

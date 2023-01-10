@@ -102,7 +102,6 @@ end
 ---------------------------------------------------------------------------------------------------
 function M.setup(opts)
   opts = opts or {}
-  M.split_on_top = opts.split_on_top or true
   M.menu_height = opts.menu_height or 13
   M.store_hooks = opts.store_hooks or {
     before_mksession = {},

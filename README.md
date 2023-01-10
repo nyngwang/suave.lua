@@ -55,7 +55,6 @@ use {
   config = function ()
     local suave = require('suave')
     suave.setup {
-      -- split_on_top = true,
       -- menu_height = 13,
       store_hooks = {
         before_mksession = {

@@ -2,6 +2,7 @@ vim.api.nvim_create_augroup('suave.lua', { clear = true })
 ---------------------------------------------------------------------------------------------------
 local M = {}
 local PROJECT_NAME = 'suave'
+local PROJECT_DATA_NAME = 'storage'
 
 
 local function get_project_suave_path()
@@ -79,23 +80,22 @@ end
 
 
 local function disable_local_qf_highlight()
+  local function _call_hl()
+    vim.cmd([[
+      hi __SUAVE_QF_DISABLE guibg=NONE guifg=Directory
+      hi __SUAVE_NO_CURSORLINE guibg=NONE guifg=NONE
+    ]])
+  end
   local function _disable_local_qf_highlight()
     if cursor_is_at_the_menu() then
-      vim.cmd([[
-        hi __SUAVE_QF_DISABLE guibg=NONE guifg=Directory
-        hi __SUAVE_NO_CURSORLINE guibg=NONE guifg=NONE
-      ]])
+      _call_hl()
       vim.cmd('set winhl=QuickFixLine:__SUAVE_QF_DISABLE,CursorLine:__SUAVE_NO_CURSORLINE')
+      _call_hl()
     end
   end
-  vim.api.nvim_create_autocmd({ 'BufWinEnter' }, {
+  vim.api.nvim_create_autocmd({ 'BufWinEnter', 'BufEnter' }, {
     group = 'suave.lua',
-    pattern = 'quickfix',
-    callback = function () _disable_local_qf_highlight() end
-  })
-  vim.api.nvim_create_autocmd({ 'BufEnter' }, {
-    group = 'suave.lua',
-    pattern = '*', -- match against qf name.
+    pattern = '*',
     callback = function () _disable_local_qf_highlight() end
   })
 end

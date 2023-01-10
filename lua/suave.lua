@@ -117,18 +117,18 @@ function M.setup(opts)
 end
 
 
-function M.folder_is_there(target_folder)
-  if not target_folder then
-    target_folder = get_project_suave_path()
+function M.folder_or_file_is_there(target_path)
+  if not target_path then
+    target_path = get_project_suave_path()
   end
-  local yes, _, code = os.rename(target_folder, target_folder)
+  local yes, _, code = os.rename(target_path, target_path)
   return yes or (code == 13)
 end
 
 
 function M.toggle_menu()
   -- hint the user whether the current dir is suave root.
-  if not M.folder_is_there() then
+  if not M.folder_or_file_is_there() then
     print("Suave: Please create a hidden folder `.suave/` at your project root first!")
     return
   end
@@ -147,7 +147,7 @@ end
 
 
 function M.store_session(auto)
-  if not M.folder_is_there() then return end
+  if not M.folder_or_file_is_there() then return end
 
   if not auto and not cursor_is_at_the_menu() then
     print("Suave: Please move your cursor to the menu window to store session!")
@@ -191,7 +191,7 @@ end
 
 
 function M.restore_session(auto)
-  if not M.folder_is_there() then return end
+  if not M.folder_or_file_is_there() then return end
 
   if not auto and not cursor_is_at_the_menu() then
     print("Suave: Please move your cursor to the menu window to restore session!")

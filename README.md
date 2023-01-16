@@ -57,7 +57,10 @@ use {
     suave.setup {
       -- menu_height = 13,
       store_hooks = {
+        -- WARN: DON'T call `vim.cmd('wa')` in both `before_mksession` and `after_mksession`.
+        --       (leads to so silent error that will disable auto-session!)
         before_mksession = {
+          -- this is an example to close neo-tree.nvim.
           function ()
             -- for _, w in ipairs(vim.api.nvim_list_wins()) do
             --   if vim.api.nvim_buf_get_option(vim.api.nvim_win_get_buf(w), 'ft') == 'neo-tree' then
@@ -65,25 +68,26 @@ use {
             --   end
             -- end
           end,
-          -- the `data` param is Lua table, which will be stored into the project json.
+        },
+        after_mksession = {
+          -- NOTE: the `data` param is Lua table, which will be stored into the project json.
+          -- this is an example to store colorscheme.
           function (data)
-            -- do your stuff here.
-            -- WARN: DON'T call `vim.cmd('wa')` here.
-            --       (leads to so silent error that basically disable auto-session!)
-            data.should_use_transparent_background = true
+            -- store current colorscheme.
+            data.colorscheme = vim.g.colors_name
           end,
         },
-        after_mksession = {},
       },
       restore_hooks = {
         before_source = {},
         after_source = {
           function (data)
             if not data then return end
-            if data.should_use_transparent_background then
-              -- try restore transparent background.
-              -- vim.cmd('hi Normal guibg=NONE')
-            end
+            -- restore colorscheme.
+            vim.cmd(string.format([[
+              color %s
+              doau ColorScheme %s
+            ]], data.colorscheme, data.colorscheme))
           end,
         },
       }

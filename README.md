@@ -65,17 +65,27 @@ use {
             --   end
             -- end
           end,
-          function ()
+          -- the `data` param is Lua table, which will be stored into the project json.
+          function (data)
             -- do your stuff here.
             -- WARN: DON'T call `vim.cmd('wa')` here.
             --       (leads to so silent error that basically disable auto-session!)
+            data.should_use_transparent_background = true
           end,
         },
         after_mksession = {},
       },
       restore_hooks = {
         before_source = {},
-        after_source = {},
+        after_source = {
+          function (data)
+            if not data then return end
+            if data.should_use_transparent_background then
+              -- try restore transparent background.
+              -- vim.cmd('hi Normal guibg=NONE')
+            end
+          end,
+        },
       }
     }
     -- Uncomment the following lines to enable project session automation.

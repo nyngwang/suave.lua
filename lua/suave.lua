@@ -107,7 +107,7 @@ local function write_to_project_json(data)
     print("Suave: fetching file handler for writing ... failed!")
     return false
   end
-  fp:write(vim.json.encode(data))
+  fp:write(require('./utils').format_table(vim.json.encode(data)))
   fp:close()
   print("Suave: write to project file ... success!")
   return true
@@ -115,6 +115,7 @@ end
 
 
 local function get_or_create_project_file_data()
+  -- create
   if not M.folder_or_file_is_there(get_project_json_path()) then
     vim.cmd(string.format('!touch %s', get_project_json_path()))
     write_to_project_json({})
@@ -122,7 +123,7 @@ local function get_or_create_project_file_data()
     return true, {}
   end
 
-  -- read the table and return
+  -- or get
   local succeeded, read = read_from_project_json()
   if not succeeded then return false end
   print("Suave: A default project file has been created under `.suave/` folder!")

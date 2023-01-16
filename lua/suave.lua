@@ -37,7 +37,7 @@ local function refresh_the_menu()
   for dir in io.popen([[ find ]] .. get_project_session_folder_path() .. [[ -name '*.vim' ]]):lines() do
     items[#items+1] = {
       filename = vim.fn.fnamemodify(dir, ':t'),
-      lnum = tonumber(string.sub(io.popen([[ stat -f %Sm -t %Y%m%d%H%M ]] .. dir):read(), 3, 10)), -- timestamp
+      lnum = tonumber(string.sub(io.popen([[ stat -f %Sm -t %Y%m%d%H%M ]] .. dir):read(), 3, 10)), -- timestamp.
       -- TODO: should maintain a mapping file to store users' note on each session.
       text = '',
     }
@@ -115,7 +115,7 @@ end
 
 
 local function get_or_create_project_file_data()
-  -- create
+  -- create.
   if not M.folder_or_file_is_there(get_project_json_path()) then
     vim.cmd(string.format('!touch %s', get_project_json_path()))
     write_to_project_json({})
@@ -123,7 +123,7 @@ local function get_or_create_project_file_data()
     return true, {}
   end
 
-  -- or get
+  -- or get.
   local succeeded, read = read_from_project_json()
   if not succeeded then return false end
   print("Suave: A default project file has been created under `.suave/` folder!")
@@ -151,6 +151,20 @@ local function disable_local_qf_highlight()
     callback = function () _disable_local_qf_highlight() end
   })
 end
+
+
+local function remember_colorscheme()
+  M.store_hooks.before_mksession[#M.store_hooks.before_mksession+1] = function (data)
+    data.colorscheme = vim.g.colors_name
+  end
+  M.restore_hooks.after_source[#M.restore_hooks.after_source+1] = function (data)
+    if not data then return end
+    vim.cmd(string.format([[
+      color %s
+      doau ColorScheme %s
+    ]], data.colorscheme, data.colorscheme))
+  end
+end
 ---------------------------------------------------------------------------------------------------
 function M.setup(opts)
   opts = opts or {}
@@ -164,6 +178,7 @@ function M.setup(opts)
     after_source = {},
   }
 
+  remember_colorscheme()
   disable_local_qf_highlight()
 end
 
@@ -207,15 +222,18 @@ function M.store_session(auto)
 
   if not auto or the_menu_is_open() then M.toggle_menu() end
 
-  -- run pre-store-hooks
+  -- prepare store project data.
+  local succeed, data = get_or_create_project_file_data()
+
+  -- run pre-store-hooks.
   if M.store_hooks.before_mksession ~= nil then
     for _, hook in ipairs(M.store_hooks.before_mksession) do
-      if type(hook) == 'function' then hook() end
+      if type(hook) == 'function' then hook(data) end
     end
   end
 
-  -- deal with auto case
-  if auto then -- just overwrite the default
+  -- deal with auto case.
+  if auto then -- just overwrite the default.
     vim.cmd('mksession! ' .. get_project_session_folder_path() .. '/default.vim')
   else
     local input = vim.fn.input('Enter a name for the current session: ')
@@ -229,18 +247,16 @@ function M.store_session(auto)
     -- TODO: get & save note from user.
   end
 
-  -- store data
-  local succeed, data = get_or_create_project_file_data()
-  if succeed and type(data) == 'table' then
-    data.colors_name = vim.g.colors_name
-    write_to_project_json(data)
+  -- run post-store-hooks.
+  if M.store_hooks.after_mksession ~= nil then
+    for _, hook in ipairs(M.store_hooks.after_mksession) do
+      if type(hook) == 'function' then hook(data) end
+    end
   end
 
-  -- run post-store-hooks
-  if M.store_hooks.after_mksession ~= nil then
-    for _, cb in ipairs(M.store_hooks.after_mksession) do
-      if type(cb) then cb() end
-    end
+  -- restore project data.
+  if succeed and type(data) == 'table' then
+    write_to_project_json(data)
   end
 
   -- restore the menu.
@@ -256,15 +272,18 @@ function M.restore_session(auto)
     return
   end
 
-  -- run pre-restore-hooks
+  -- prepare restore project data.
+  local _, data = get_or_create_project_file_data()
+
+  -- run pre-restore-hooks.
   if M.restore_hooks.before_source ~= nil then
     for _, hook in ipairs(M.restore_hooks.before_source) do
-      if type(hook) == 'function' then hook() end
+      if type(hook) == 'function' then hook(data) end
     end
   end
 
-  -- deal with auto case
-  if auto then -- just overwrite the default
+  -- deal with auto case.
+  if auto then -- just overwrite the default.
     vim.cmd('silent! source ' .. get_project_session_folder_path() .. '/default.vim')
   else
     local items = vim.fn.getqflist({ items=0 }).items
@@ -275,19 +294,10 @@ function M.restore_session(auto)
     vim.cmd('silent! source ' .. get_project_session_folder_path() .. '/' .. fname)
   end
 
-  -- restore data
-  local succeed, data = get_or_create_project_file_data()
-  if succeed and type(data) == 'table' then
-    vim.cmd(string.format([[
-      color %s
-      doau ColorScheme %s
-    ]], data.colors_name, data.colors_name))
-  end
-
-  -- run post-restore-hooks
+  -- run post-restore-hooks.
   if M.restore_hooks.after_source ~= nil then
     for _, hook in ipairs(M.restore_hooks.after_source) do
-      if type(hook) == 'function' then hook() end
+      if type(hook) == 'function' then hook(data) end
     end
   end
 end

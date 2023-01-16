@@ -151,20 +151,6 @@ local function disable_local_qf_highlight()
     callback = function () _disable_local_qf_highlight() end
   })
 end
-
-
-local function remember_colorscheme()
-  M.store_hooks.before_mksession[#M.store_hooks.before_mksession+1] = function (data)
-    data.colorscheme = vim.g.colors_name
-  end
-  M.restore_hooks.after_source[#M.restore_hooks.after_source+1] = function (data)
-    if not data then return end
-    vim.cmd(string.format([[
-      color %s
-      doau ColorScheme %s
-    ]], data.colorscheme, data.colorscheme))
-  end
-end
 ---------------------------------------------------------------------------------------------------
 function M.setup(opts)
   opts = opts or {}
@@ -178,7 +164,6 @@ function M.setup(opts)
     after_source = {},
   }
 
-  remember_colorscheme()
   disable_local_qf_highlight()
 end
 

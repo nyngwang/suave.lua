@@ -1,53 +1,61 @@
 suave.lua
 ===
 
-SUAVE is a quasi-acronym of "Session in LUA for Vim Enthusiasts."
 
-(Not a decent name for a native speaker, but it's OK to be low-key so only me can enjoy this 🤫)
+suave.lua aims to be a minimal,
+beginner-friendly **project session automation** plugin
+for NeoVim beginners.
 
-Suave.lua aims to be a standalone beginner-friendly auto-session plugin for NeoVim beginners.
+(The name `SUAVE` is a quasi-acronym of "`S`ession in L`UA` for `V`im `E`nthusiasts".)  
 
 
 ## Intro.
 
 https://user-images.githubusercontent.com/24765272/207277797-88682d65-fe22-41a1-9155-b20e23a0205b.mov
 
-Suave.lua is all about project session automation, it can:
+suave.lua is all about project session automation, it can:
 
 - `.setup()` callbacks on session store/restore.
 - `.session_store()` multiple sessions for a single project.
 - `.session_store()` mutliple sessions in your project folder.
-- add simple note on session store.
+- it supports storing a custom **JSON** for each of your project.
+
 
 Now you can:
 
-- use `autocmd` + `.session_store(auto=true)` to achieve project session automation:
-  - When `auto=true`, the naming process is skipped. So you can put the call inside `autocmd`.
-- store/restore sessions by selecting them from the menu, no more command typing.
+- Use `autocmd` + `.session_store(auto=true)` to achieve project session automation:
+  - when `auto=true`, the naming process is skipped, so it's safe to call it inside a `autocmd`.
+- Use the JSON data to...
+  - restore the colortheme for each project.
+  - restore the pomodoro timer for each project.
+  - restore anything needed to restore a plugin.
 
 
 ## Manual
 
 - To start using suave.lua, just `mkdir .suave/` at your project root.
-  - All your sessions will be stored into this folder.
-  - Now you can keep all your sessions along with your project. (No more "where are my sessions?")
+  - all your sessions will be stored into this folder.
+  - no more question like "where does this plugin store all my sessions?"
 - The core idea is very simple:
-  - Suave.lua has only one menu. (Actually, it's a quickfix list)
+  - suave.lua has only one menu. (a quickfix list)
   - The menu lists all sessions created for your current project.
   - To execute any command I provided, you have to open the menu first.
-    - if you never open the menu, you will never encounter any trouble. (No deletion by accidents)
+    - if you never open the menu, you will never delete your sessions in Neovim upon bugs.
 - That's it.
-- Addons:
-  - [x] The menu can show the last-modified-timestamp of each session.
-  - [x] Show how to achieve "auto-session" by `autocmd` in README.md.
-  - [ ] The command for you to add note to each session file.
+
+
+#### Addons:
+
+- [x] The menu can show the last-modified-timestamp of each session.
+- [x] Show how to achieve "auto-session" by `autocmd` in README.md.
+- [ ] The command for you to add note to each session file.
 
 
 ## Setup Example
 
 Works with:
-- folke/lazy.nvim: simply remove the `use`.
-- wbthomason/packer.nvim: exact copy.
+- [folke/lazy.nvim](https://github.com/folke/lazy.nvim): simply remove the `use`.
+- [wbthomason/packer.nvim](https://github.com/wbthomason/packer.nvim): exact copy.
 
 ```lua
 use {
@@ -55,23 +63,24 @@ use {
   config = function ()
     local suave = require('suave')
     suave.setup {
-      -- menu_height = 13,
+      -- menu_height = 6,
       store_hooks = {
         -- WARN: DON'T call `vim.cmd('wa')` in both `before_mksession` and `after_mksession`.
         --       (leads to so silent error that will disable auto-session!)
         before_mksession = {
-          -- this is an example to close neo-tree.nvim.
-          function ()
-            -- for _, w in ipairs(vim.api.nvim_list_wins()) do
-            --   if vim.api.nvim_buf_get_option(vim.api.nvim_win_get_buf(w), 'ft') == 'neo-tree' then
-            --     vim.api.nvim_win_close(w, false)
-            --   end
-            -- end
-          end,
+          -- NOTE: this is an example to close `rcarriga/nvim-dap-ui`.
+          -- function () require('dapui').close() end,
+          -- function ()
+          --   -- NOTE: this is an example to close `nvim-neo-tree/neo-tree.nvim`.
+          --   -- for _, w in ipairs(vim.api.nvim_list_wins()) do
+          --   --   if vim.api.nvim_buf_get_option(vim.api.nvim_win_get_buf(w), 'ft') == 'neo-tree' then
+          --   --     vim.api.nvim_win_close(w, false)
+          --   --   end
+          --   -- end
+          -- end,
         },
         after_mksession = {
-          -- NOTE: the `data` param is Lua table, which will be stored into the project json.
-          -- this is an example to store colorscheme.
+          -- NOTE: the `data` param is Lua table, which will be stored as json.
           function (data)
             -- store current colorscheme.
             data.colorscheme = vim.g.colors_name
@@ -79,7 +88,6 @@ use {
         },
       },
       restore_hooks = {
-        before_source = {},
         after_source = {
           function (data)
             if not data then return end
@@ -103,8 +111,7 @@ use {
       callback = function ()
         if vim.fn.argc() == 0 -- not git
           and not vim.v.event.dying -- safe leave
-          then suave.store_session(true)
-        end
+        then suave.store_session(true) end
       end
     })
     vim.api.nvim_create_autocmd({ 'DirChangedPre' }, {
@@ -112,16 +119,14 @@ use {
       callback = function ()
         if vim.fn.argc() == 0 -- not git
           and not vim.v.event.changed_window -- it's cd
-          then suave.store_session(true)
-        end
+        then suave.store_session(true) end
       end
     })
     vim.api.nvim_create_autocmd({ 'VimEnter' }, {
       pattern = '*',
       callback = function ()
         if vim.fn.argc() == 0 -- not git
-          then suave.restore_session(true)
-        end
+        then suave.restore_session(true) end
       end
     })
     vim.api.nvim_create_autocmd({ 'DirChanged' }, {
@@ -129,18 +134,9 @@ use {
       callback = function ()
         if vim.fn.argc() == 0 -- not git
           and not vim.v.event.changed_window -- it's cd
-          then suave.restore_session(true)
-        end
+        then suave.restore_session(true) end
       end
     })
   end
 }
 ```
-
-
-## TODO
-
-- be able to add one note for each session
-- be able to change note for each session
-
-

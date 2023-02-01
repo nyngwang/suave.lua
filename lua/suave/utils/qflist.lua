@@ -25,10 +25,10 @@ end
 function M.refresh_the_menu()
   -- prepare items.
   local items = {}
-  for dir in io.popen([[ find ]] .. P.get_project_session_folder_path() .. [[ -name '*.vim' ]]):lines() do
+  for dir in vim.fn.system({ 'find', P.get_project_session_folder_path(), '-name', '*.vim' }):gmatch('[^\r\n]+') do
     items[#items+1] = {
       filename = vim.fn.fnamemodify(dir, ':t'),
-      lnum = tonumber(string.sub(io.popen([[ stat -f %Sm -t %Y%m%d%H%M ]] .. dir):read(), 3, 10)), -- timestamp.
+      lnum = tonumber(vim.fn.system({ 'stat', '-f', '%Sm', '-t', '%Y%m%d%H%M', dir }):sub(3, 10)), -- timestamp.
       -- TODO: should maintain a mapping file to store users' note on each session.
       text = '',
     }

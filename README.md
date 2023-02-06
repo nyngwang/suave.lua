@@ -86,7 +86,7 @@ use {
           -- end,
         },
         after_mksession = {
-          -- NOTE: the `data` param is Lua table, which will be stored as json.
+          -- NOTE: the `data` param is Lua table, which will be stored in json format under `.suave/` folder.
           function (data)
             -- store current colorscheme.
             data.colorscheme = vim.g.colors_name
@@ -106,40 +106,38 @@ use {
         },
       }
     }
-    -- Uncomment the following lines to enable project session automation.
-    -- NOTE: if you always call `tcd` instead of `cd` on all tabpages,
-    --       you can stay in the current project and suave.lua will remember these paths.
-    -- NOTE: the `vim.fn.argc() == 0` is required to exclude `git commit`.
-    -- NOTE: the `not vim.v.event.changed_window` is required to exclude `:tabn`,`:tabp`.
+    -- The following `autocmd`s are required to enable project session automation.
+    -- NOTE: `pattern = 'global'` prevent storing/restoring session on `tcd`.
+    -- NOTE: Vim's session can remember all tabpage `tcd`s (paths stored by `:tcd`).
     -- INFO: While not included, it's recommended to use `group = ...` for your autocmd.
     vim.api.nvim_create_autocmd({ 'VimLeavePre' }, {
       pattern = '*',
       callback = function ()
-        if vim.fn.argc() == 0 -- not git
-          and not vim.v.event.dying -- safe leave
+        if vim.fn.argc() == 0 -- not `git commit`.
+          and not vim.v.event.dying -- safe leave.
         then suave.store_session(true) end
       end
     })
     vim.api.nvim_create_autocmd({ 'DirChangedPre' }, {
       pattern = 'global',
       callback = function ()
-        if vim.fn.argc() == 0 -- not git
-          and not vim.v.event.changed_window -- it's cd
+        if vim.fn.argc() == 0 -- not `git commit`.
+          and not vim.v.event.changed_window -- not `:tabn`, `:tabp`.
         then suave.store_session(true) end
       end
     })
     vim.api.nvim_create_autocmd({ 'VimEnter' }, {
       pattern = '*',
       callback = function ()
-        if vim.fn.argc() == 0 -- not git
+        if vim.fn.argc() == 0 -- not `git_commit`.
         then suave.restore_session(true) end
       end
     })
     vim.api.nvim_create_autocmd({ 'DirChanged' }, {
       pattern = 'global',
       callback = function ()
-        if vim.fn.argc() == 0 -- not git
-          and not vim.v.event.changed_window -- it's cd
+        if vim.fn.argc() == 0 -- not `git_commit`.
+          and not vim.v.event.changed_window -- not `:tabn`, `:tabp`.
         then suave.restore_session(true) end
       end
     })

@@ -3,7 +3,7 @@ local M = {}
 
 
 function M.create_autocmd_autosave()
-  vim.api.nvim_create_autocmd({ 'TextChanged' }, {
+  vim.api.nvim_create_autocmd({ 'TextChanged', 'InsertLeave' }, {
     group = 'suave.lua',
     pattern = '*',
     callback = function ()

@@ -1,6 +1,7 @@
 local P = require('suave.utils.path')
 local Q = require('suave.utils.qflist')
 local J = require('suave.utils.json')
+local A = require('suave.utils.autosave')
 local M = {}
 vim.api.nvim_create_augroup('suave.lua', { clear = true })
 ---------------------------------------------------------------------------------------------------
@@ -16,8 +17,13 @@ function M.setup(opts)
     before_source = {},
     after_source = {},
   }
+  M.auto_save = opts.auto_save or { enabled = false, exclude_filetypes = {}, exclude_buftypes = {} }
+    if type(M.auto_save.enabled) ~= 'boolean' then M.auto_save.enabled = false end
+    if type(M.auto_save.exclude_filetypes) ~= 'table' then M.auto_save.exclude_filetypes = {} end
+    if type(M.auto_save.exclude_buftypes) ~= 'table' then M.auto_save.exclude_buftypes = {} end
 
   Q.disable_local_qf_highlight()
+  A.create_autocmd_autosave()
 end
 
 

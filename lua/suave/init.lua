@@ -35,8 +35,6 @@ function M.toggle_menu()
 
   if Q.the_menu_is_open() then vim.cmd('ccl') return end
 
-  print("Suave: You're ready to suave!")
-
   -- open a qflist window at the top.
   if Q.the_menu_did_build() then
     Q.refresh_the_menu()
@@ -74,7 +72,7 @@ function M.store_session(auto)
   else
     local input = vim.fn.input('Enter a name for the current session: ')
     if input == '' or input:match('^%s+$') then -- nothing added.
-      print('cancelled.')
+      print("cancelled.")
       return
     end
     -- TODO: confirm overwrite on name repeat.
@@ -102,6 +100,7 @@ end
 
 function M.restore_session(auto)
   if not P.folder_or_file_is_there() then return end
+  print("Suave: Found the `.suave/` folder!")
 
   if not auto and not Q.cursor_is_at_the_menu() then
     print("Suave: Please move your cursor to the menu window to restore session!")

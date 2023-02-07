@@ -11,8 +11,8 @@ function M.create_autocmd_autosave()
       if
         vim.bo.readonly
         or vim.api.nvim_buf_get_name(0) == ''
+        or vim.bo.buftype ~= ''
         or U.table_contains(require('suave').auto_save.exclude_filetypes, vim.bo.filetype)
-        or U.table_contains(require('suave').auto_save.exclude_buftypes, vim.bo.buftype)
         or not (vim.bo.modifiable and vim.bo.modified)
       then return end
       vim.cmd('silent w')

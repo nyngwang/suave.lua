@@ -70,7 +70,6 @@ use {
       auto_save = {
         enabled = true,
         -- exclude_filetypes = {},
-        -- exclude_buftypes = {},
       },
       store_hooks = {
         -- WARN: DON'T call `vim.cmd('wa')` here. Use `setup.auto_save` instead. (See #4)

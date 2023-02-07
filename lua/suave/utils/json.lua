@@ -39,29 +39,29 @@ end
 function M.read_from_project_json()
   local fp = io.open(M.get_project_json_path(), 'r')
   if not fp then
-    print("Suave: fetching file handler for reading ... failed!")
+    print("Suave: Failed to read the project JSON.")
     return false
   end
   local data = vim.json.decode(fp:read("*a"))
   fp:close()
-  print("Suave: reading project file ... succeeded!")
+  print("Suave: Succeeded in reading the project JSON!")
   return true, data
 end
 
 
 function M.write_to_project_json(data)
   if type(data) ~= 'table' then
-    print("Suave: data should be a Lua table!")
+    print("Suave: The input of `write_to_project_json` should be a Lua table...")
     return false
   end
   local fp = io.open(M.get_project_json_path(), 'w+')
   if not fp then
-    print("Suave: fetching file handler for writing ... failed!")
+    print("Suave: Failed to write to the project JSON...")
     return false
   end
   fp:write(M.format_table(vim.json.encode(data)))
   fp:close()
-  print("Suave: write to project file ... success!")
+  print("Suave: Succeeded in writing to the project JSON!")
   return true
 end
 
@@ -78,7 +78,6 @@ function M.get_or_create_project_file_data()
   -- or get.
   local succeeded, read = M.read_from_project_json()
   if not succeeded then return false end
-  print("Suave: A default project file has been created under `.suave/` folder!")
   return true, read
 end
 

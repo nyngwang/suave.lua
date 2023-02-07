@@ -11,7 +11,10 @@ for NeoVim beginners.
 
 ## Intro.
 
-https://user-images.githubusercontent.com/24765272/207277797-88682d65-fe22-41a1-9155-b20e23a0205b.mov
+
+https://user-images.githubusercontent.com/24765272/217173559-5afca7a3-b071-4b6a-8ca1-09c52529fe77.mov
+
+
 
 suave.lua is all about project session automation, it can:
 

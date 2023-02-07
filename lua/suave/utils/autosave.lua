@@ -10,6 +10,7 @@ function M.create_autocmd_autosave()
       if not require('suave').auto_save.enabled then return end
       if
         vim.bo.readonly
+        or vim.api.nvim_buf_get_name(0) == ''
         or U.table_contains(require('suave').auto_save.exclude_filetypes, vim.bo.filetype)
         or U.table_contains(require('suave').auto_save.exclude_buftypes, vim.bo.buftype)
         or not (vim.bo.modifiable and vim.bo.modified)

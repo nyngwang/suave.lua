@@ -37,6 +37,11 @@ end
 
 
 function M.read_from_project_json()
+  if not P.folder_or_file_is_there() then
+    print("Suave: Failed to find the `.suave/` folder.")
+    return false
+  end
+
   local fp = io.open(M.get_project_json_path(), 'r')
   if not fp then
     print("Suave: Failed to read the project JSON.")
@@ -50,6 +55,11 @@ end
 
 
 function M.write_to_project_json(data)
+  if not P.folder_or_file_is_there() then
+    print("Suave: Failed to find the `.suave/` folder.")
+    return false
+  end
+
   if type(data) ~= 'table' then
     print("Suave: The input of `write_to_project_json` should be a Lua table...")
     return false
@@ -67,6 +77,11 @@ end
 
 
 function M.get_or_create_project_file_data()
+  if not P.folder_or_file_is_there() then
+    print("Suave: Failed to find the `.suave/` folder.")
+    return false
+  end
+
   -- create.
   if not P.folder_or_file_is_there(M.get_project_json_path()) then
     vim.cmd(string.format('!touch %s', M.get_project_json_path()))

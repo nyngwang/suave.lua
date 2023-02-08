@@ -2,7 +2,7 @@ local U = require('suave.utils')
 local M = {}
 
 
-function M.create_autocmd_autosave()
+local function auto_save()
   vim.api.nvim_create_autocmd({ 'TextChanged', 'InsertLeave' }, {
     group = 'suave.lua',
     pattern = '*',
@@ -18,6 +18,11 @@ function M.create_autocmd_autosave()
       vim.cmd('silent w')
     end
   })
+end
+
+
+function M.create_autocmds()
+  auto_save()
 end
 
 

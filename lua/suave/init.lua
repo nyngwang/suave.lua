@@ -30,7 +30,6 @@ end
 
 
 function M.toggle_menu()
-  -- hint the user whether the current dir is suave root.
   if not P.folder_or_file_is_there() then
     print("Suave: Please create a hidden folder `.suave/` at your project root first!")
     return
@@ -38,7 +37,6 @@ function M.toggle_menu()
 
   if Q.the_menu_is_open() then vim.cmd('ccl') return end
 
-  -- open a qflist window at the top.
   if Q.the_menu_did_build() then
     Q.refresh_the_menu()
     Q.switch_to_the_menu()
@@ -55,22 +53,16 @@ function M.store_session(auto)
     return
   end
 
-  if not auto or Q.the_menu_is_open() then M.toggle_menu() end
+  if Q.the_menu_is_open() then M.toggle_menu() end
 
-  -- prepare store project data.
   local succeeded, data = unpack(J.get_or_create_project_file_data())
 
-  -- run pre-store-hooks.
-  -- TODO: should use type() == 'table' instead
-  -- TODO: should use pairs instead
-  if M.store_hooks.before_mksession ~= nil then
-    for _, hook in ipairs(M.store_hooks.before_mksession) do
-      if type(hook) == 'function' then hook(data) end
-    end
+  -- store_hooks - before mksession.
+  for key, hook in pairs(M.store_hooks.before_mksession) do
+    if type(key) == 'number' and type(hook) == 'function' then hook(data) end
   end
 
-  -- deal with auto case.
-  if auto then -- just overwrite the default.
+  if auto then
     vim.cmd('mksession! ' .. P.get_project_session_folder_path() .. '/default.vim')
   else
     local input = vim.fn.input('Enter a name for the current session: ')
@@ -80,23 +72,18 @@ function M.store_session(auto)
     end
     -- TODO: confirm overwrite on name repeat.
     vim.cmd('mksession! ' .. P.get_project_session_folder_path() .. '/' .. input .. '.vim')
-
-    -- TODO: get & save note from user.
   end
 
-  -- run post-store-hooks.
-  if M.store_hooks.after_mksession ~= nil then
-    for _, hook in ipairs(M.store_hooks.after_mksession) do
-      if type(hook) == 'function' then hook(data) end
-    end
+  -- store_hooks - after mksession.
+  for key, hook in pairs(M.store_hooks.after_mksession) do
+    if type(key) == 'number' and type(hook) == 'function' then hook(data) end
   end
 
-  -- restore project data.
   if succeeded and type(data) == 'table' then
     J.write_to_project_json(data)
   end
 
-  -- restore the menu.
+  -- since open the menu is required to store session.
   if not auto then M.toggle_menu() end
 end
 
@@ -110,18 +97,14 @@ function M.restore_session(auto)
     return
   end
 
-  -- prepare restore project data.
   local _, data = unpack(J.get_or_create_project_file_data())
 
-  -- run pre-restore-hooks.
-  if M.restore_hooks.before_source ~= nil then
-    for _, hook in ipairs(M.restore_hooks.before_source) do
-      if type(hook) == 'function' then hook() end
-    end
+  -- restore_hooks - before source.
+  for key, hook in pairs(M.restore_hooks.before_source) do
+    if type(key) == 'number' and type(hook) == 'function' then hook() end
   end
 
-  -- deal with auto case.
-  if auto then -- just overwrite the default.
+  if auto then
     vim.cmd('silent! source ' .. P.get_project_session_folder_path() .. '/default.vim')
   else
     local items = vim.fn.getqflist({ items=0 }).items
@@ -132,11 +115,9 @@ function M.restore_session(auto)
     vim.cmd('silent! source ' .. P.get_project_session_folder_path() .. '/' .. fname)
   end
 
-  -- run post-restore-hooks.
-  if M.restore_hooks.after_source ~= nil then
-    for _, hook in ipairs(M.restore_hooks.after_source) do
-      if type(hook) == 'function' then hook(data) end
-    end
+  -- restore_hooks - after source.
+  for key, hook in pairs(M.restore_hooks.after_source) do
+    if type(key) == 'number' and type(hook) == 'function' then hook(data) end
   end
 end
 

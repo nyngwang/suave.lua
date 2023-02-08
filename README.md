@@ -12,7 +12,7 @@ for NeoVim beginners.
 ## Intro.
 
 
-https://user-images.githubusercontent.com/24765272/217173559-5afca7a3-b071-4b6a-8ca1-09c52529fe77.mov
+https://user-images.githubusercontent.com/24765272/217663121-7880060f-728c-463f-9063-ecdbafb00a06.mov
 
 
 

@@ -39,18 +39,18 @@ end
 function M.read_from_project_json()
   if not P.folder_or_file_is_there() then
     print("Suave: Failed to find the `.suave/` folder.")
-    return false
+    return { false, nil }
   end
 
   local fp = io.open(M.get_project_json_path(), 'r')
   if not fp then
     print("Suave: Failed to read the project JSON.")
-    return false
+    return { false, nil }
   end
   local data = vim.json.decode(fp:read("*a"))
   fp:close()
   print("Suave: Succeeded in reading the project JSON!")
-  return true, data
+  return { true, data }
 end
 
 
@@ -79,7 +79,7 @@ end
 function M.get_or_create_project_file_data()
   if not P.folder_or_file_is_there() then
     print("Suave: Failed to find the `.suave/` folder.")
-    return false
+    return { false, nil }
   end
 
   -- create.
@@ -87,13 +87,13 @@ function M.get_or_create_project_file_data()
     vim.cmd(string.format('!touch %s', M.get_project_json_path()))
     M.write_to_project_json({})
     print("Suave: A default project file has been created under the `.suave/` folder!")
-    return true, {}
+    return { true, {} }
   end
 
   -- or get.
-  local succeeded, read = M.read_from_project_json()
-  if not succeeded then return false end
-  return true, read
+  local succeeded, read = unpack(M.read_from_project_json())
+  if not succeeded then return { false, nil } end
+  return { true, read }
 end
 
 

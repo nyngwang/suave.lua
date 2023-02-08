@@ -60,7 +60,7 @@ function M.store_session(auto)
   if not auto or Q.the_menu_is_open() then M.toggle_menu() end
 
   -- prepare store project data.
-  local succeed, data = J.get_or_create_project_file_data()
+  local succeeded, data = unpack(J.get_or_create_project_file_data())
 
   -- run pre-store-hooks.
   -- TODO: should use type() == 'table' instead
@@ -94,7 +94,7 @@ function M.store_session(auto)
   end
 
   -- restore project data.
-  if succeed and type(data) == 'table' then
+  if succeeded and type(data) == 'table' then
     J.write_to_project_json(data)
   end
 
@@ -113,12 +113,12 @@ function M.restore_session(auto)
   end
 
   -- prepare restore project data.
-  local _, data = J.get_or_create_project_file_data()
+  local _, data = unpack(J.get_or_create_project_file_data())
 
   -- run pre-restore-hooks.
   if M.restore_hooks.before_source ~= nil then
     for _, hook in ipairs(M.restore_hooks.before_source) do
-      if type(hook) == 'function' then hook(data) end
+      if type(hook) == 'function' then hook() end
     end
   end
 

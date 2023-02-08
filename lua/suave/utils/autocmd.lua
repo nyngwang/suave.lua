@@ -21,8 +21,59 @@ local function auto_save()
 end
 
 
+local function client_side()
+  -- NOTE: `pattern = 'global'` prevent storing/restoring session on `:tcd`.
+  -- NOTE: Vim's session will store those tabpage current-directory.
+  vim.api.nvim_create_autocmd({ 'VimLeavePre' }, {
+    group = 'suave.lua',
+    pattern = '*',
+    callback = function ()
+      if
+        vim.fn.argc() ~= 0 -- git or `nvim ...`.
+        or vim.v.event.dying -- not safe leave.
+      then return end
+      require('suave.utils.json')._on_VimLeave = true
+      require('suave').store_session(true)
+      require('suave.utils.json')._on_VimLeave = false
+    end
+  })
+  vim.api.nvim_create_autocmd({ 'VimEnter' }, {
+    group = 'suave.lua',
+    pattern = '*',
+    callback = function ()
+      if vim.fn.argc() ~= 0 -- git or `nvim ...`.
+      then return end
+      require('suave').restore_session(true)
+    end
+  })
+  vim.api.nvim_create_autocmd({ 'DirChangedPre' }, {
+    group = 'suave.lua',
+    pattern = 'global', -- changed by `:cd`.
+    callback = function ()
+      if
+        vim.fn.argc() ~= 0 -- git or `nvim ...`.
+        or vim.v.event.changed_window -- by `:tabn`, `:tabp`.
+      then return end
+      require('suave').store_session(true)
+    end
+  })
+  vim.api.nvim_create_autocmd({ 'DirChanged' }, {
+    group = 'suave.lua',
+    pattern = 'global', -- changed by `:cd`.
+    callback = function ()
+      if
+        vim.fn.argc() ~= 0 -- git or `nvim ...`.
+        or vim.v.event.changed_window -- by `:tabn`, `:tabp`.
+      then return end
+      require('suave').restore_session(true)
+    end
+  })
+end
+
+
 function M.create_autocmds()
   auto_save()
+  client_side()
 end
 
 

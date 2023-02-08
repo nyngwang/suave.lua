@@ -56,16 +56,16 @@ Now you can:
 
 ## Setup Example
 
-Works with:
+Notes for different plugin managers:
 - [folke/lazy.nvim](https://github.com/folke/lazy.nvim): simply remove the `use`.
 - [wbthomason/packer.nvim](https://github.com/wbthomason/packer.nvim): exact copy.
+
 
 ```lua
 use {
   'nyngwang/suave.lua',
   config = function ()
-    local suave = require('suave')
-    suave.setup {
+    require('suave').setup {
       -- menu_height = 6,
       auto_save = {
         enabled = true,
@@ -108,41 +108,6 @@ use {
         },
       }
     }
-    -- The following `autocmd`s are required to enable project session automation.
-    -- NOTE: `pattern = 'global'` prevent storing/restoring session on `tcd`.
-    -- NOTE: Vim's session can remember all tabpage `tcd`s (paths stored by `:tcd`).
-    -- INFO: While not included, it's recommended to use `group = ...` for your autocmd.
-    vim.api.nvim_create_autocmd({ 'VimLeavePre' }, {
-      pattern = '*',
-      callback = function ()
-        if vim.fn.argc() == 0 -- not `git commit`.
-          and not vim.v.event.dying -- safe leave.
-        then suave.store_session(true) end
-      end
-    })
-    vim.api.nvim_create_autocmd({ 'DirChangedPre' }, {
-      pattern = 'global',
-      callback = function ()
-        if vim.fn.argc() == 0 -- not `git commit`.
-          and not vim.v.event.changed_window -- not `:tabn`, `:tabp`.
-        then suave.store_session(true) end
-      end
-    })
-    vim.api.nvim_create_autocmd({ 'VimEnter' }, {
-      pattern = '*',
-      callback = function ()
-        if vim.fn.argc() == 0 -- not `git_commit`.
-        then suave.restore_session(true) end
-      end
-    })
-    vim.api.nvim_create_autocmd({ 'DirChanged' }, {
-      pattern = 'global',
-      callback = function ()
-        if vim.fn.argc() == 0 -- not `git_commit`.
-          and not vim.v.event.changed_window -- not `:tabn`, `:tabp`.
-        then suave.restore_session(true) end
-      end
-    })
   end
 }
 ```

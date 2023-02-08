@@ -10,16 +10,14 @@ function M.setup(opts)
   if not opts then opts = {} end
 
   M.menu_height = opts.menu_height or 13
-  M.store_hooks = opts.store_hooks or {
-    before_mksession = {},
-    after_mksession = {},
-  }
+  M.store_hooks = opts.store_hooks or { before_mksession = {}, after_mksession = {} }
+    if type(M.store_hooks.before_mksession) ~= 'table' then M.store_hooks.before_mksession = {} end
+    if type(M.store_hooks.after_mksession) ~= 'table' then M.store_hooks.after_mksession = {} end
     helpers.add_method_append(M.store_hooks.before_mksession)
     helpers.add_method_append(M.store_hooks.after_mksession)
-  M.restore_hooks = opts.restore_hooks or {
-    before_source = {},
-    after_source = {},
-  }
+  M.restore_hooks = opts.restore_hooks or { before_source = {}, after_source = {} }
+    if type(M.restore_hooks.before_source) ~= 'table' then M.restore_hooks.before_source = {} end
+    if type(M.restore_hooks.after_source) ~= 'table' then M.restore_hooks.after_source = {} end
     helpers.add_method_append(M.restore_hooks.before_source)
     helpers.add_method_append(M.restore_hooks.after_source)
   M.auto_save = opts.auto_save or { enabled = false, exclude_filetypes = {} }

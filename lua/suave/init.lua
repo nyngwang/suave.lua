@@ -2,6 +2,7 @@ local P = require('suave.utils.path')
 local Q = require('suave.utils.qflist')
 local J = require('suave.utils.json')
 local A = require('suave.utils.autosave')
+local helpers = require('suave.helpers')
 local M = {}
 vim.api.nvim_create_augroup('suave.lua', { clear = true })
 ---------------------------------------------------------------------------------------------------
@@ -13,10 +14,14 @@ function M.setup(opts)
     before_mksession = {},
     after_mksession = {},
   }
+    helpers.add_method_append(M.store_hooks.before_mksession)
+    helpers.add_method_append(M.store_hooks.after_mksession)
   M.restore_hooks = opts.restore_hooks or {
     before_source = {},
     after_source = {},
   }
+    helpers.add_method_append(M.restore_hooks.before_source)
+    helpers.add_method_append(M.restore_hooks.after_source)
   M.auto_save = opts.auto_save or { enabled = false, exclude_filetypes = {} }
     if type(M.auto_save.enabled) ~= 'boolean' then M.auto_save.enabled = false end
     if type(M.auto_save.exclude_filetypes) ~= 'table' then M.auto_save.exclude_filetypes = {} end

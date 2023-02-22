@@ -30,6 +30,8 @@ Now you can:
   - when `auto=true`, the naming process is skipped, so it's safe to call it inside a `autocmd`.
 - Use the JSON data to...
   - restore the colortheme for each project.
+    - Some Vimmers did this before: [UncleBill/prism.vim](https://github.com/UncleBill/prism.vim)
+    - VSCoders did this too: [JohnPapa/Peacock](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock)
   - restore the pomodoro timer for each project.
   - restore anything needed to restore a plugin.
 

@@ -30,7 +30,7 @@ function M.setup(opts)
 
 
   Q.disable_local_qf_highlight()
-  A.create_autocmds(M.autocmds)
+  A.create_autocmds()
 end
 
 

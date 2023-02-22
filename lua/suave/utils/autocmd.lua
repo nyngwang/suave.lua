@@ -1,4 +1,3 @@
-local U = require('suave.utils')
 local M = {}
 
 
@@ -11,7 +10,7 @@ local function auto_save()
         vim.bo.readonly
         or vim.api.nvim_buf_get_name(0) == ''
         or vim.bo.buftype ~= ''
-        or U.table_contains(require('suave').autocmds.auto_save.exclude_filetypes, vim.bo.filetype)
+        or require('suave.utils').table_contains(require('suave').autocmds.auto_save.exclude_filetypes, vim.bo.filetype)
         or not (vim.bo.modifiable and vim.bo.modified)
       then return end
       vim.cmd('silent w')
@@ -70,9 +69,9 @@ local function switcher_on_cd()
 end
 
 
-function M.create_autocmds(autocmds)
-  if autocmds.auto_save.enabled then auto_save() end
-  if autocmds.switcher_on_cd.enabled then switcher_on_cd() end
+function M.create_autocmds()
+  if require('suave').autocmds.auto_save.enabled then auto_save() end
+  if require('suave').autocmds.switcher_on_cd.enabled then switcher_on_cd() end
 end
 
 

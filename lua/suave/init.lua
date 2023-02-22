@@ -20,12 +20,17 @@ function M.setup(opts)
     if type(M.restore_hooks.after_source) ~= 'table' then M.restore_hooks.after_source = {} end
     helpers.add_method_append(M.restore_hooks.before_source)
     helpers.add_method_append(M.restore_hooks.after_source)
-  M.auto_save = opts.auto_save or { enabled = false, exclude_filetypes = {} }
-    if type(M.auto_save.enabled) ~= 'boolean' then M.auto_save.enabled = false end
-    if type(M.auto_save.exclude_filetypes) ~= 'table' then M.auto_save.exclude_filetypes = {} end
+  M.autocmds = opts.autocmds or { auto_save = nil, switcher_on_cd = nil }
+    if type(M.autocmds) ~= 'table' then M.autocmds = {} end
+    if type(M.autocmds.auto_save) ~= 'table' then M.autocmds.auto_save = {} end
+      if type(M.autocmds.auto_save.enabled) ~= 'boolean' then M.autocmds.auto_save.enabled = false end
+      if type(M.autocmds.auto_save.exclude_filetypes) ~= 'table' then M.autocmds.auto_save.exclude_filetypes = {} end
+    if type(M.autocmds.switcher_on_cd) ~= 'table' then M.autocmds.switcher_on_cd = {} end
+      if type(M.autocmds.switcher_on_cd.enabled) ~= 'boolean' then M.autocmds.switcher_on_cd.enabled = true end
+
 
   Q.disable_local_qf_highlight()
-  A.create_autocmds()
+  A.create_autocmds(M.autocmds)
 end
 
 

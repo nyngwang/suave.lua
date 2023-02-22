@@ -7,12 +7,11 @@ local function auto_save()
     group = 'suave.lua',
     pattern = '*',
     callback = function ()
-      if not require('suave').auto_save.enabled then return end
       if
         vim.bo.readonly
         or vim.api.nvim_buf_get_name(0) == ''
         or vim.bo.buftype ~= ''
-        or U.table_contains(require('suave').auto_save.exclude_filetypes, vim.bo.filetype)
+        or U.table_contains(require('suave').autocmds.auto_save.exclude_filetypes, vim.bo.filetype)
         or not (vim.bo.modifiable and vim.bo.modified)
       then return end
       vim.cmd('silent w')
@@ -21,7 +20,7 @@ local function auto_save()
 end
 
 
-local function client_side()
+local function switcher_on_cd()
   -- NOTE: `pattern = 'global'` prevent storing/restoring session on `:tcd`.
   -- NOTE: Vim's session will store those tabpage current-directory.
   vim.api.nvim_create_autocmd({ 'VimLeavePre' }, {
@@ -71,9 +70,9 @@ local function client_side()
 end
 
 
-function M.create_autocmds()
-  auto_save()
-  client_side()
+function M.create_autocmds(autocmds)
+  if autocmds.auto_save.enabled then auto_save() end
+  if autocmds.switcher_on_cd.enabled then switcher_on_cd() end
 end
 
 

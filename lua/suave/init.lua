@@ -64,7 +64,7 @@ function M.store_session(auto)
 
   -- store_hooks - before mksession.
   for key, hook in pairs(M.store_hooks.before_mksession) do
-    if type(key) == 'number' and type(hook) == 'function' then hook(data) end
+    if type(key) == 'number' and type(hook) == 'function' then pcall(hook, data) end
   end
 
   if auto then
@@ -81,7 +81,7 @@ function M.store_session(auto)
 
   -- store_hooks - after mksession.
   for key, hook in pairs(M.store_hooks.after_mksession) do
-    if type(key) == 'number' and type(hook) == 'function' then hook(data) end
+    if type(key) == 'number' and type(hook) == 'function' then pcall(hook, data) end
   end
 
   if succeeded and type(data) == 'table' then
@@ -106,7 +106,7 @@ function M.restore_session(auto)
 
   -- restore_hooks - before source.
   for key, hook in pairs(M.restore_hooks.before_source) do
-    if type(key) == 'number' and type(hook) == 'function' then hook() end
+    if type(key) == 'number' and type(hook) == 'function' then pcall(hook) end
   end
 
   if auto then
@@ -122,7 +122,7 @@ function M.restore_session(auto)
 
   -- restore_hooks - after source.
   for key, hook in pairs(M.restore_hooks.after_source) do
-    if type(key) == 'number' and type(hook) == 'function' then hook(data) end
+    if type(key) == 'number' and type(hook) == 'function' then pcall(hook, data) end
   end
 end
 

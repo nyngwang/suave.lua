@@ -7,6 +7,7 @@ M.PROJECT_JSON_NAME = string.format('%s_storage', P.PROJECT_NAME)
 function M.format_table(str)
   local level = 0
   local out = ''
+  local dquote = 0
 
   for c in str:gmatch'.' do
     if c == '{' or c == '[' then
@@ -22,7 +23,12 @@ function M.format_table(str)
       out = out .. c .. '\n'
       out = out .. ('  '):rep(level)
     elseif c == ':' then
-      out = out .. ': '
+      if dquote%2 == 1 -- between quotes.
+      then out = out .. ':'
+      else out = out .. ': ' end
+    elseif c == '"' then
+      dquote = dquote+1
+      out = out .. '"'
     else
       out = out .. c
     end

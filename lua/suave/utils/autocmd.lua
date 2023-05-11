@@ -14,6 +14,7 @@ local function auto_save()
         or not (vim.bo.modifiable and vim.bo.modified)
       then return end
       vim.cmd('silent w')
+      vim.cmd('doau BufWritePost')
     end
   })
 end

@@ -29,7 +29,7 @@ local function switcher_on_cd()
     callback = function ()
       if
         vim.fn.argc() ~= 0 -- git or `nvim ...`.
-        or vim.v.event.dying -- not safe leave.
+        or vim.v.dying > 0 -- not safe leave.
       then return end
       require('suave.utils.json')._on_VimLeave = true
       require('suave').store_session(true)

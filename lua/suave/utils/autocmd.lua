@@ -39,6 +39,7 @@ local function switcher_on_cd()
   vim.api.nvim_create_autocmd({ 'VimEnter' }, {
     group = 'suave.lua',
     pattern = '*',
+    nested = true,
     callback = function ()
       if vim.fn.argc() ~= 0 -- git or `nvim ...`.
       then return end
@@ -59,6 +60,7 @@ local function switcher_on_cd()
   vim.api.nvim_create_autocmd({ 'DirChanged' }, {
     group = 'suave.lua',
     pattern = 'global', -- changed by `:cd`.
+    nested = true,
     callback = function ()
       if
         vim.fn.argc() ~= 0 -- git or `nvim ...`.
